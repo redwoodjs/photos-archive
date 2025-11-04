@@ -1,3 +1,5 @@
+import type { Env } from "@/lib/env";
+
 export interface TokenData {
   access_token: string;
   refresh_token: string;
@@ -5,19 +7,9 @@ export interface TokenData {
   expires_at: number;
 }
 
-export interface Env {
-  GOOGLE_CLIENT_ID?: string;
-  GOOGLE_CLIENT_SECRET?: string;
-  GOOGLE_REDIRECT_URI?: string;
-}
-
 export async function getAuthUrl(env: Env, state?: string): Promise<string> {
   const clientId = env.GOOGLE_CLIENT_ID;
   const redirectUri = env.GOOGLE_REDIRECT_URI;
-
-  if (!clientId || !redirectUri) {
-    throw new Error("Missing Google OAuth configuration");
-  }
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -42,10 +34,6 @@ export async function exchangeCodeForTokens(
   const clientId = env.GOOGLE_CLIENT_ID;
   const clientSecret = env.GOOGLE_CLIENT_SECRET;
   const redirectUri = env.GOOGLE_REDIRECT_URI;
-
-  if (!clientId || !clientSecret || !redirectUri) {
-    throw new Error("Missing Google OAuth configuration");
-  }
 
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -83,10 +71,6 @@ export async function refreshAccessToken(
 ): Promise<{ access_token: string; expires_in: number; expires_at: number }> {
   const clientId = env.GOOGLE_CLIENT_ID;
   const clientSecret = env.GOOGLE_CLIENT_SECRET;
-
-  if (!clientId || !clientSecret) {
-    throw new Error("Missing Google OAuth configuration");
-  }
 
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",

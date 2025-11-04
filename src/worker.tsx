@@ -6,35 +6,26 @@ import { setCommonHeaders } from "@/app/headers";
 import { Photos } from "@/app/pages/Photos";
 import * as auth from "@/lib/auth";
 import * as googlePhotos from "@/lib/google-photos";
+import { ENV, type Env } from "@/lib/env";
 
-export type AppContext = {
-  env: {
-    TOKENS?: KVNamespace;
-    GOOGLE_CLIENT_ID?: string;
-    GOOGLE_CLIENT_SECRET?: string;
-    GOOGLE_REDIRECT_URI?: string;
-  };
-};
+export type AppContext = {};
 
 export default defineApp([
   setCommonHeaders(),
-  async ({ ctx, request, rw }) => {
+  async ({ ctx, request }) => {
     const url = new URL(request.url);
-    const env = (rw.env as AppContext["env"]) || {};
 
     if (url.pathname === "/auth/google") {
-      return await handleAuthStart(request, env);
+      return await handleAuthStart(request, ENV);
     }
 
     if (url.pathname === "/auth/callback") {
-      return await handleAuthCallback(request, env);
+      return await handleAuthCallback(request, ENV);
     }
 
     if (url.pathname === "/api/test-photos") {
-      return await handleTestPhotos(request, env);
+      return await handleTestPhotos(request, ENV);
     }
-
-    ctx.env = env;
   },
   ({ ctx }) => {
     ctx;
@@ -42,10 +33,7 @@ export default defineApp([
   render(Document, [route("/photos", Photos)]),
 ]);
 
-async function handleAuthStart(
-  request: Request,
-  env: AppContext["env"]
-): Promise<Response> {
+async function handleAuthStart(request: Request, env: Env): Promise<Response> {
   try {
     const state = crypto.randomUUID();
     const authUrl = await auth.getAuthUrl(env, state);
@@ -73,7 +61,7 @@ async function handleAuthStart(
 
 async function handleAuthCallback(
   request: Request,
-  env: AppContext["env"]
+  env: Env
 ): Promise<Response> {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -113,10 +101,6 @@ async function handleAuthCallback(
   try {
     const tokens = await auth.exchangeCodeForTokens(code, env);
 
-    if (!env.TOKENS) {
-      throw new Error("KV namespace not configured");
-    }
-
     const userId = "default";
     await auth.storeTokens(env.TOKENS, userId, tokens);
 
@@ -140,15 +124,8 @@ async function handleAuthCallback(
   }
 }
 
-async function handleTestPhotos(
-  request: Request,
-  env: AppContext["env"]
-): Promise<Response> {
+async function handleTestPhotos(request: Request, env: Env): Promise<Response> {
   try {
-    if (!env.TOKENS) {
-      throw new Error("KV namespace not configured");
-    }
-
     const userId = "default";
     const accessToken = await auth.getValidAccessToken(env.TOKENS, userId, env);
 

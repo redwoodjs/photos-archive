@@ -25,7 +25,8 @@
     "react": "19.3.0-canary-561ee24d-20251101",
     "react-dom": "19.3.0-canary-561ee24d-20251101",
     "react-server-dom-webpack": "19.3.0-canary-561ee24d-20251101",
-    "rwsdk": "1.0.0-beta.25"
+    "rwsdk": "1.0.0-beta.25",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.13.18",
