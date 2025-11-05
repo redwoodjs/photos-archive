@@ -1,8 +1,0 @@
-# Google OAuth2 Configuration
-# Copy this file to .dev.vars and fill in your actual values
-# .dev.vars is gitignored and should not be committed
-
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:8787/auth/callback
-

@@ -26,6 +26,14 @@ export default defineApp([
     if (url.pathname === "/api/test-photos") {
       return await handleTestPhotos(request, ENV);
     }
+
+    if (url.pathname === "/auth/clear") {
+      return await handleClearAuth(request, ENV);
+    }
+
+    if (url.pathname === "/auth/revoke") {
+      return await handleRevokeAuth(request, ENV);
+    }
   },
   ({ ctx }) => {
     ctx;
@@ -115,6 +123,61 @@ async function handleAuthCallback(
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Token exchange failed",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
+async function handleClearAuth(request: Request, env: Env): Promise<Response> {
+  try {
+    const userId = "default";
+    await env.TOKENS.delete(`tokens:${userId}`);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/photos",
+      },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Failed to clear authentication",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
+}
+
+async function handleRevokeAuth(request: Request, env: Env): Promise<Response> {
+  try {
+    const userId = "default";
+    const tokens = await auth.getTokens(env.TOKENS, userId);
+    
+    if (tokens?.access_token) {
+      await fetch(`https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`, {
+        method: "POST",
+      });
+    }
+    
+    await env.TOKENS.delete(`tokens:${userId}`);
+    
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/photos",
+      },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Failed to revoke authentication",
       }),
       {
         status: 500,
