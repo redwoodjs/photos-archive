@@ -14,13 +14,13 @@ npm install
 
 ### Google OAuth Credentials
 
-This application uses Google OAuth2 to authenticate with Google Photos API. You need to create OAuth credentials in Google Cloud Console:
+This application uses Google OAuth2 to authenticate with Google Photos Picker API. You need to create OAuth credentials in Google Cloud Console:
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
-3. Enable the Google Photos Library API:
+3. Enable the Google Photos Picker API:
    - Navigate to **APIs & Services** > **Library**
-   - Search for "Google Photos Library API"
+   - Search for "Google Photos Picker API"
    - Click **Enable**
 4. Configure the OAuth consent screen:
    - Navigate to **APIs & Services** > **OAuth consent screen**
@@ -31,9 +31,11 @@ This application uses Google OAuth2 to authenticate with Google Photos API. You 
      - Developer contact information: Your email
    - Click **Save and Continue**
    - Under **Scopes**, click **Add or Remove Scopes**
-   - Search for and add: `https://www.googleapis.com/auth/photoslibrary.readonly`
+   - Search for and add: `https://www.googleapis.com/auth/photospicker.mediaitems.readonly`
+     - This scope allows users to select specific photos to share with your app
+     - Alternative description in UI: "See photos and videos you've selected"
    - Click **Update** then **Save and Continue**
-   - Add test users if your app is in testing mode (your own email)
+   - Add test users if your app is in testing mode (add your own email)
    - Click **Save and Continue**
 5. Create OAuth 2.0 credentials:
    - Navigate to **APIs & Services** > **Credentials**
@@ -44,6 +46,8 @@ This application uses Google OAuth2 to authenticate with Google Photos API. You 
 6. Copy your credentials:
    - **Client ID**: Displayed immediately after creation
    - **Client Secret**: Click **Show** to reveal it
+
+**Note:** This app uses the Google Photos Picker API, which requires users to explicitly select photos to share rather than granting access to their entire library. This is a privacy-focused API introduced after Google deprecated broader library access scopes in March 2025.
 
 ### Environment Variables
 
@@ -72,24 +76,43 @@ Point your browser to the URL displayed in the terminal (e.g. `http://localhost:
 
 ### Error: "Request had insufficient authentication scopes" (403)
 
-This error occurs when your tokens don't have the required Google Photos Library API scope. Follow these steps:
+This error occurs when your tokens don't have the required Google Photos Picker API scope. Follow these steps:
 
-1. **Verify OAuth consent screen configuration:**
+1. **Verify APIs are enabled:**
+
+   - Go to [Google Cloud Console](https://console.cloud.google.com/) > APIs & Services > Enabled APIs & services
+   - Confirm "Google Photos Picker API" is listed
+   - If not, go to Library, search for it, and enable it
+
+2. **Verify OAuth consent screen configuration:**
 
    - Go to [Google Cloud Console](https://console.cloud.google.com/) > APIs & Services > OAuth consent screen
    - Click on your app
    - Go to the **Scopes** section
-   - Verify that `https://www.googleapis.com/auth/photoslibrary.readonly` is listed
+   - Verify that `https://www.googleapis.com/auth/photospicker.mediaitems.readonly` is listed
    - If not present, click **Add or Remove Scopes**, search for and add it, then **Save**
 
-2. **Revoke existing access:**
+3. **Revoke existing access:**
 
    - Visit `/auth/revoke` in your browser (this revokes Google access and clears local tokens)
    - Alternatively, manually revoke access at: [Google Account Security](https://myaccount.google.com/permissions) > find your app > Remove Access
 
-3. **Re-authenticate:**
+4. **Re-authenticate:**
    - Visit `/auth/google` and complete the OAuth flow
-   - Make sure you see the Google Photos Library permission request during consent
+   - Make sure you see the permission request during consent
    - If the permission doesn't appear, the OAuth consent screen isn't configured correctly
 
 **Important:** Tokens issued before the scope was added to the consent screen won't work. You must revoke and re-authenticate after configuring the consent screen.
+
+### How the Photo Picker Works
+
+This application uses the Google Photos Picker API, which works differently from traditional library access:
+
+1. User authenticates with Google (grants permission to use picker)
+2. User clicks "Select Photos" in the app
+3. User is redirected to Google Photos picker interface
+4. User explicitly selects photos or albums to share
+5. User is redirected back to the app
+6. App displays only the selected photos
+
+This approach gives users explicit control over which photos they share with your application.
