@@ -38,7 +38,17 @@ export default defineApp([
   ({ ctx }) => {
     ctx;
   },
-  render(Document, [route("/photos", Photos)]),
+  render(Document, [
+    route("/", () => {
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: "/photos",
+        },
+      });
+    }),
+    route("/photos", Photos),
+  ]),
 ]);
 
 async function handleAuthStart(request: Request, env: Env): Promise<Response> {
@@ -145,7 +155,10 @@ async function handleClearAuth(request: Request, env: Env): Promise<Response> {
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Failed to clear authentication",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to clear authentication",
       }),
       {
         status: 500,
@@ -159,15 +172,18 @@ async function handleRevokeAuth(request: Request, env: Env): Promise<Response> {
   try {
     const userId = "default";
     const tokens = await auth.getTokens(env.TOKENS, userId);
-    
+
     if (tokens?.access_token) {
-      await fetch(`https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`, {
-        method: "POST",
-      });
+      await fetch(
+        `https://oauth2.googleapis.com/revoke?token=${tokens.access_token}`,
+        {
+          method: "POST",
+        }
+      );
     }
-    
+
     await env.TOKENS.delete(`tokens:${userId}`);
-    
+
     return new Response(null, {
       status: 302,
       headers: {
@@ -177,7 +193,10 @@ async function handleRevokeAuth(request: Request, env: Env): Promise<Response> {
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Failed to revoke authentication",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to revoke authentication",
       }),
       {
         status: 500,
