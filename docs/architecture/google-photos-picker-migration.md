@@ -58,7 +58,7 @@ The Picker API uses a session-based flow:
 #### 1. Session Creation
 
 ```
-POST https://photoslibrary.googleapis.com/v1/pickerSessions
+POST https://photospicker.googleapis.com/v1/sessions
 Authorization: Bearer {access_token}
 
 Response:
@@ -79,7 +79,7 @@ User returns to application after selection. Application receives callback with 
 #### 4. Session Polling
 
 ```
-GET https://photoslibrary.googleapis.com/v1/pickerSessions/{session_id}
+GET https://photospicker.googleapis.com/v1/sessions/{session_id}
 
 Response:
 {
@@ -91,7 +91,7 @@ Response:
 #### 5. Media Retrieval
 
 ```
-GET https://photoslibrary.googleapis.com/v1/pickerSessions/{session_id}/mediaItems
+GET https://photospicker.googleapis.com/v1/mediaItems?sessionId={session_id}&pageSize=100
 
 Response:
 {
@@ -102,7 +102,7 @@ Response:
 #### 6. Session Cleanup
 
 ```
-DELETE https://photoslibrary.googleapis.com/v1/pickerSessions/{session_id}
+DELETE https://photospicker.googleapis.com/v1/sessions/{session_id}
 ```
 
 ### Data Model Changes
@@ -240,4 +240,3 @@ Given the fundamental change in user experience, two approaches:
 - Compliant with Google's updated privacy model
 - User has explicit control over shared photos
 - More secure and privacy-focused
-

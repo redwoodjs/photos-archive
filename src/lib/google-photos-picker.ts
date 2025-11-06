@@ -12,10 +12,10 @@ export interface PickerMediaItem {
   productUrl: string;
   baseUrl: string;
   mimeType: string;
-  mediaMetadata: {
-    creationTime: string;
-    width: string;
-    height: string;
+  mediaMetadata?: {
+    creationTime?: string;
+    width?: string;
+    height?: string;
     photo?: {
       cameraMake?: string;
       cameraModel?: string;
@@ -54,7 +54,12 @@ export async function createPickerSession(
     );
   }
 
-  return response.json();
+  const session = await response.json();
+  
+  return {
+    ...session,
+    pickerUri: `${session.pickerUri}/autoclose`,
+  };
 }
 
 export async function getPickerSession(
@@ -88,8 +93,9 @@ export async function getSessionMediaItems(
   pageSize: number = 100
 ): Promise<PickerMediaItemsResponse> {
   const url = new URL(
-    `https://photospicker.googleapis.com/v1/sessions/${sessionId}/mediaItems`
+    `https://photospicker.googleapis.com/v1/mediaItems`
   );
+  url.searchParams.set("sessionId", sessionId);
   url.searchParams.set("pageSize", pageSize.toString());
   if (pageToken) {
     url.searchParams.set("pageToken", pageToken);

@@ -106,7 +106,7 @@ async function handleAuthCallback(
   env: Env
 ): Promise<Response> {
   console.log(`[AUTH] handleAuthCallback called`);
-  
+
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
@@ -137,7 +137,9 @@ async function handleAuthCallback(
     .find((c) => c.trim().startsWith("oauth_state="));
   const storedState = stateCookie?.split("=")[1];
 
-  console.log(`[AUTH] State validation: received=${state}, stored=${storedState}`);
+  console.log(
+    `[AUTH] State validation: received=${state}, stored=${storedState}`
+  );
 
   if (!state || state !== storedState) {
     console.error(`[AUTH] State parameter mismatch`);
@@ -242,7 +244,7 @@ async function handleRevokeAuth(request: Request, env: Env): Promise<Response> {
 
 async function handleTestPhotos(request: Request, env: Env): Promise<Response> {
   console.log(`[AUTH] handleTestPhotos called`);
-  
+
   try {
     const userId = "default";
     const accessToken = await auth.getValidAccessToken(env.TOKENS, userId, env);
@@ -260,7 +262,9 @@ async function handleTestPhotos(request: Request, env: Env): Promise<Response> {
       );
     }
 
-    console.log(`[AUTH] handleTestPhotos: Authenticated with valid access token`);
+    console.log(
+      `[AUTH] handleTestPhotos: Authenticated with valid access token`
+    );
     return new Response(
       JSON.stringify({
         success: true,
@@ -275,7 +279,10 @@ async function handleTestPhotos(request: Request, env: Env): Promise<Response> {
     console.error(`[AUTH] handleTestPhotos error:`, error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Authentication check failed",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Authentication check failed",
         details: error instanceof Error ? error.stack : undefined,
       }),
       {
@@ -291,13 +298,15 @@ async function handleCreatePickerSession(
   env: Env
 ): Promise<Response> {
   console.log(`[AUTH] handleCreatePickerSession called`);
-  
+
   try {
     const userId = "default";
     const accessToken = await auth.getValidAccessToken(env.TOKENS, userId, env);
 
     if (!accessToken) {
-      console.log(`[AUTH] handleCreatePickerSession: Not authenticated, returning 401`);
+      console.log(
+        `[AUTH] handleCreatePickerSession: Not authenticated, returning 401`
+      );
       return new Response(
         JSON.stringify({
           error: "Not authenticated. Please visit /auth/google first.",
@@ -310,7 +319,6 @@ async function handleCreatePickerSession(
     }
 
     console.log(`[AUTH] handleCreatePickerSession: Have valid access token`);
-
 
     const session = await googlePhotosPicker.createPickerSession(accessToken);
 
@@ -417,14 +425,18 @@ async function handleGetPickerSessionStatus(
   env: Env,
   sessionId: string
 ): Promise<Response> {
-  console.log(`[AUTH] handleGetPickerSessionStatus called for session: ${sessionId}`);
-  
+  console.log(
+    `[AUTH] handleGetPickerSessionStatus called for session: ${sessionId}`
+  );
+
   try {
     const userId = "default";
     const accessToken = await auth.getValidAccessToken(env.TOKENS, userId, env);
 
     if (!accessToken) {
-      console.log(`[AUTH] handleGetPickerSessionStatus: Not authenticated, returning 401`);
+      console.log(
+        `[AUTH] handleGetPickerSessionStatus: Not authenticated, returning 401`
+      );
       return new Response(
         JSON.stringify({
           error: "Not authenticated",
@@ -437,7 +449,6 @@ async function handleGetPickerSessionStatus(
     }
 
     console.log(`[AUTH] handleGetPickerSessionStatus: Have valid access token`);
-
 
     const session = await googlePhotosPicker.getPickerSession(
       accessToken,
@@ -475,14 +486,18 @@ async function handleGetPickerSessionMedia(
   env: Env,
   sessionId: string
 ): Promise<Response> {
-  console.log(`[AUTH] handleGetPickerSessionMedia called for session: ${sessionId}`);
-  
+  console.log(
+    `[AUTH] handleGetPickerSessionMedia called for session: ${sessionId}`
+  );
+
   try {
     const userId = "default";
     const accessToken = await auth.getValidAccessToken(env.TOKENS, userId, env);
 
     if (!accessToken) {
-      console.log(`[AUTH] handleGetPickerSessionMedia: Not authenticated, returning 401`);
+      console.log(
+        `[AUTH] handleGetPickerSessionMedia: Not authenticated, returning 401`
+      );
       return new Response(
         JSON.stringify({
           error: "Not authenticated",
@@ -495,7 +510,6 @@ async function handleGetPickerSessionMedia(
     }
 
     console.log(`[AUTH] handleGetPickerSessionMedia: Have valid access token`);
-
 
     const url = new URL(request.url);
     const pageToken = url.searchParams.get("pageToken") || undefined;
