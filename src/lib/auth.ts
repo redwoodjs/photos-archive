@@ -22,11 +22,15 @@ export async function getAuthUrl(env: Env, state?: string): Promise<string> {
   const clientId = env.GOOGLE_CLIENT_ID;
   const redirectUri = env.GOOGLE_REDIRECT_URI;
 
+  const scopes = [
+    "https://www.googleapis.com/auth/photospicker.mediaitems.readonly",
+  ];
+
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: "https://www.googleapis.com/auth/photospicker.mediaitems.readonly",
+    scope: scopes.join(" "),
     access_type: "offline",
     prompt: "consent",
   });
@@ -42,8 +46,10 @@ export async function exchangeCodeForTokens(
   code: string,
   env: Env
 ): Promise<TokenData> {
-  console.log(`[AUTH] exchangeCodeForTokens called with code: ${code.substring(0, 10)}...`);
-  
+  console.log(
+    `[AUTH] exchangeCodeForTokens called with code: ${code.substring(0, 10)}...`
+  );
+
   const clientId = env.GOOGLE_CLIENT_ID;
   const clientSecret = env.GOOGLE_CLIENT_SECRET;
   const redirectUri = env.GOOGLE_REDIRECT_URI;
@@ -71,7 +77,13 @@ export async function exchangeCodeForTokens(
   const data = (await response.json()) as OAuthTokenResponse;
   const expiresAt = Date.now() + data.expires_in * 1000;
 
-  console.log(`[AUTH] Token exchange successful: expires_in=${data.expires_in}s, expires_at=${new Date(expiresAt).toISOString()}, hasRefreshToken=${!!data.refresh_token}`);
+  console.log(
+    `[AUTH] Token exchange successful: expires_in=${
+      data.expires_in
+    }s, expires_at=${new Date(
+      expiresAt
+    ).toISOString()}, hasRefreshToken=${!!data.refresh_token}`
+  );
 
   return {
     access_token: data.access_token,
@@ -85,8 +97,13 @@ export async function refreshAccessToken(
   refreshToken: string,
   env: Env
 ): Promise<{ access_token: string; expires_in: number; expires_at: number }> {
-  console.log(`[AUTH] refreshAccessToken called with refreshToken: ${refreshToken.substring(0, 10)}...`);
-  
+  console.log(
+    `[AUTH] refreshAccessToken called with refreshToken: ${refreshToken.substring(
+      0,
+      10
+    )}...`
+  );
+
   const clientId = env.GOOGLE_CLIENT_ID;
   const clientSecret = env.GOOGLE_CLIENT_SECRET;
 
@@ -112,7 +129,11 @@ export async function refreshAccessToken(
   const data = (await response.json()) as OAuthRefreshResponse;
   const expiresAt = Date.now() + data.expires_in * 1000;
 
-  console.log(`[AUTH] Token refresh successful: expires_in=${data.expires_in}s, expires_at=${new Date(expiresAt).toISOString()}`);
+  console.log(
+    `[AUTH] Token refresh successful: expires_in=${
+      data.expires_in
+    }s, expires_at=${new Date(expiresAt).toISOString()}`
+  );
 
   return {
     access_token: data.access_token,
@@ -126,7 +147,11 @@ export async function storeTokens(
   userId: string,
   tokens: TokenData
 ): Promise<void> {
-  console.log(`[AUTH] storeTokens called for userId: ${userId}, expires_at: ${new Date(tokens.expires_at).toISOString()}`);
+  console.log(
+    `[AUTH] storeTokens called for userId: ${userId}, expires_at: ${new Date(
+      tokens.expires_at
+    ).toISOString()}`
+  );
   await kv.put(`tokens:${userId}`, JSON.stringify(tokens));
   console.log(`[AUTH] Tokens stored successfully for userId: ${userId}`);
 }
@@ -142,7 +167,11 @@ export async function getTokens(
     return null;
   }
   const tokens = JSON.parse(data) as TokenData;
-  console.log(`[AUTH] Tokens retrieved from KV: expires_at=${new Date(tokens.expires_at).toISOString()}, hasRefreshToken=${!!tokens.refresh_token}`);
+  console.log(
+    `[AUTH] Tokens retrieved from KV: expires_at=${new Date(
+      tokens.expires_at
+    ).toISOString()}, hasRefreshToken=${!!tokens.refresh_token}`
+  );
   return tokens;
 }
 
@@ -152,7 +181,7 @@ export async function getValidAccessToken(
   env: Env
 ): Promise<string | null> {
   console.log(`[AUTH] getValidAccessToken called for userId: ${userId}`);
-  
+
   const tokens = await getTokens(kv, userId);
   if (!tokens) {
     console.log(`[AUTH] No tokens found for userId: ${userId}`);
@@ -162,8 +191,12 @@ export async function getValidAccessToken(
   const now = Date.now();
   const timeUntilExpiry = tokens.expires_at - now;
   const minutesUntilExpiry = Math.floor(timeUntilExpiry / 60000);
-  
-  console.log(`[AUTH] Token status: expires_at=${new Date(tokens.expires_at).toISOString()}, timeUntilExpiry=${minutesUntilExpiry}min, hasRefreshToken=${!!tokens.refresh_token}`);
+
+  console.log(
+    `[AUTH] Token status: expires_at=${new Date(
+      tokens.expires_at
+    ).toISOString()}, timeUntilExpiry=${minutesUntilExpiry}min, hasRefreshToken=${!!tokens.refresh_token}`
+  );
 
   if (tokens.expires_at > now + 60000) {
     console.log(`[AUTH] Token still valid, returning access_token`);
@@ -185,7 +218,11 @@ export async function getValidAccessToken(
       expires_at: refreshed.expires_at,
     };
     await storeTokens(kv, userId, updatedTokens);
-    console.log(`[AUTH] Token refreshed successfully, new expires_at=${new Date(refreshed.expires_at).toISOString()}`);
+    console.log(
+      `[AUTH] Token refreshed successfully, new expires_at=${new Date(
+        refreshed.expires_at
+      ).toISOString()}`
+    );
     return refreshed.access_token;
   } catch (error) {
     console.error(`[AUTH] Failed to refresh token:`, error);
