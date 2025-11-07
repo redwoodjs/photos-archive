@@ -1,14 +1,6 @@
-# RedwoodSDK Minimal Starter
+# Photos Archive
 
-This is the starter project for RedwoodSDK. It's a template designed to get you up and running as quickly as possible.
-
-Create your new project:
-
-```shell
-npx create-rwsdk my-project-name
-cd my-project-name
-npm install
-```
+A RedwoodSDK application that integrates with Google Photos using the Photos Picker API. Users authenticate with Google OAuth2, select specific photos or albums they want to backup, and view them within the application.
 
 ## Setup
 
